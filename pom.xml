@@ -123,6 +123,26 @@
                     <copyrightOwners>Max Hohenegger &lt;mellifluent@hohenegger.eu&gt;</copyrightOwners>
                     <inceptionYear>2021</inceptionYear>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>download</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>download-licenses</goal>
+                        </goals>
+                        <configuration>
+                            <licensesOutputDirectory>${project.build.directory}/classes/licenses</licensesOutputDirectory>
+                            <licensesOutputFile>${project.build.directory}/classes/licenses.xml</licensesOutputFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>headers</id>
+                        <goals>
+                            <goal>update-file-header</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
