@@ -2,8 +2,8 @@ language: java
 jdk:
  - openjdk11
 
-install:
-- mvn clean install
+script:
+- mvn clean verify -Dlicense.skipDownloadLicenses=true
 
 notifications:
  email:
