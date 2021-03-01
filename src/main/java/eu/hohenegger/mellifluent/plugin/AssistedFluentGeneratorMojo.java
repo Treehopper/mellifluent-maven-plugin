@@ -46,8 +46,8 @@ import eu.hohenegger.mellifluent.generator.FluentBuilderGenerator;
 import eu.hohenegger.mellifluent.generator.GeneratorException;
 import spoon.compiler.ModelBuildingException;
 
-@Mojo(name = "generate-fluent", requiresDependencyCollection = COMPILE_PLUS_RUNTIME, threadSafe = true, defaultPhase = GENERATE_SOURCES)
-public class FluentGeneratorMojo extends AbstractMojo {
+@Mojo(name = "assisted-generate-fluent", requiresDependencyCollection = COMPILE_PLUS_RUNTIME, threadSafe = true, defaultPhase = GENERATE_SOURCES)
+public class AssistedFluentGeneratorMojo extends AbstractMojo {
 
     @Parameter(property = "sourcePackage", defaultValue = "")
     private String sourcePackage;
