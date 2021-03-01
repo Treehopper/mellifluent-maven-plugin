@@ -2,9 +2,8 @@ language: java
 jdk:
  - openjdk11
 
-install:
-- mvn -N io.takari:maven:wrapper -Dmaven=3.3.9
-- ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+script:
+- mvn clean verify -Dlicense.skipDownloadLicenses=true
 
 notifications:
  email:

@@ -7,14 +7,14 @@
     <artifactId>mellifluent-maven-plugin</artifactId>
     <groupId>com.github.Treehopper</groupId>
     <packaging>maven-plugin</packaging>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 
     <properties>
         <java.version>11</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mellifluent.core.version>1.0.0</mellifluent.core.version>
+        <mellifluent.core.version>1.2.0</mellifluent.core.version>
     </properties>
 
     <licenses>
@@ -45,6 +45,11 @@
             <version>3.6.3</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>3.1.2</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
             <version>3.6.0</version>
@@ -53,19 +58,19 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.7.0</version>
+            <version>3.8.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>3.7.0</version>
+            <version>3.8.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-runner</artifactId>
-            <version>1.7.0</version>
+            <version>1.7.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -123,6 +128,26 @@
                     <copyrightOwners>Max Hohenegger &lt;mellifluent@hohenegger.eu&gt;</copyrightOwners>
                     <inceptionYear>2021</inceptionYear>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>download</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>download-licenses</goal>
+                        </goals>
+                        <configuration>
+                            <licensesOutputDirectory>${project.build.directory}/classes/licenses</licensesOutputDirectory>
+                            <licensesOutputFile>${project.build.directory}/classes/licenses.xml</licensesOutputFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>headers</id>
+                        <goals>
+                            <goal>update-file-header</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
