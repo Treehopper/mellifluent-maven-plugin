@@ -7,14 +7,14 @@
     <artifactId>mellifluent-maven-plugin</artifactId>
     <groupId>com.github.Treehopper</groupId>
     <packaging>maven-plugin</packaging>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.0</version>
 
     <properties>
         <java.version>11</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mellifluent.core.version>develop-SNAPSHOT</mellifluent.core.version>
+        <mellifluent.core.version>1.2.0</mellifluent.core.version>
     </properties>
 
     <licenses>
