@@ -29,11 +29,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Enumeration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.apache.maven.artifact.Artifact;
@@ -46,8 +45,8 @@ import org.apache.maven.plugins.dependency.resolvers.ResolveDependenciesMojo;
 import org.apache.maven.plugins.dependency.utils.DependencyStatusSets;
 
 import eu.hohenegger.mellifluent.generator.FileWriter;
-import eu.hohenegger.mellifluent.generator.GeneratorException;
 import eu.hohenegger.mellifluent.generator.UnassistedFluentBuilderGenerator;
+import spoon.reflect.declaration.CtClass;
 
 @Mojo(name = "generate-fluent", requiresDependencyCollection = ResolutionScope.COMPILE, threadSafe = true,
         defaultPhase = LifecyclePhase.GENERATE_SOURCES)
@@ -64,6 +63,8 @@ public class UnassistedGeneratorMojo extends ResolveDependenciesMojo {
 
     private boolean checkPackages = true;
 
+    private UnassistedFluentBuilderGenerator builderGenerator;
+
     @Override
     protected void doExecute() throws MojoExecutionException {
         this.classifier = "sources";
@@ -76,12 +77,19 @@ public class UnassistedGeneratorMojo extends ResolveDependenciesMojo {
     void executeDoSomething(DependencyStatusSets dependencyStatusSets) throws MojoExecutionException {
         Set<Artifact> resolvedArtifactSet = dependencyStatusSets.getResolvedDependencies();
 
+//        Set<Artifact> filteredArtifactSet = new HashSet<>();
+//        for (Artifact artifact : resolvedArtifactSet) {
+//            if (containsPackage(artifact, packageName)) {
+//                filteredArtifactSet.add(artifact);
+//            }
+//        }
+
         doSomething(resolvedArtifactSet);
     }
 
     private void doSomething(Set<Artifact> filteredArtifactSet) throws MojoExecutionException {
         List<File> jarFiles = filteredArtifactSet.stream().map(Artifact::getFile).collect(toList());
-        UnassistedFluentBuilderGenerator builderGenerator = new UnassistedFluentBuilderGenerator<>();
+        builderGenerator = new UnassistedFluentBuilderGenerator<>();
         builderGenerator.setup(jarFiles, new Consumer<CharSequence>() {
             @Override
             public void accept(CharSequence string) {
@@ -90,9 +98,10 @@ public class UnassistedGeneratorMojo extends ResolveDependenciesMojo {
         });
 
         getLog().info("Processing... " + jarFiles.stream().map(File::getName).collect(joining(",")));
+        List<CtClass<?>> list = Collections.emptyList();
         try {
-            builderGenerator.generate(packageName);
-        } catch (GeneratorException exception) {
+            list = builderGenerator.generate(packageName);
+        } catch (Exception exception) {
             throw new MojoExecutionException("Builder Generation Exception", exception);
         }
         Path outputFolder = Paths.get(outputPath);
@@ -107,27 +116,21 @@ public class UnassistedGeneratorMojo extends ResolveDependenciesMojo {
 
             getLog().info("Created " + outputPath);
         }
-        FileWriter writer = new FileWriter(builderGenerator, outputPath, targetPackage, true);
+
+        list.add(builderGenerator.getAbstractBuilder());
+        FileWriter writer = new FileWriter(list, targetPackage, new File(outputPath), true);
 
         writer.persist();
     }
 
     private boolean containsPackage(Artifact artifact, String packageName) throws MojoExecutionException {
         try (JarFile jarFile = new JarFile(artifact.getFile())) {
-            Enumeration<JarEntry> jarEntries = jarFile.entries();
-            while (jarEntries.hasMoreElements()) {
-                JarEntry jarEntry = jarEntries.nextElement();
-                getLog().debug(" - " + jarEntry.getName());
-                if (jarEntry.getName().startsWith(packageName)) {
-                    return true;
-                }
-            }
+            return jarFile.getJarEntry(packageName.replace(".", "/")) != null;
         } catch (IOException e) {
             throw new MojoExecutionException("IOException: Group ID: " + artifact.getGroupId()
                     + " Artifact ID: " + artifact.getArtifactId(), e);
         }
 
-        return false;
     }
 
     boolean isCheckPackages() {

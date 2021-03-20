@@ -25,6 +25,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.GENERATE_SOURCES;
 import static org.apache.maven.plugins.annotations.ResolutionScope.COMPILE_PLUS_RUNTIME;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,8 +44,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import eu.hohenegger.mellifluent.generator.FileWriter;
 import eu.hohenegger.mellifluent.generator.FluentBuilderGenerator;
-import eu.hohenegger.mellifluent.generator.GeneratorException;
 import spoon.compiler.ModelBuildingException;
+import spoon.reflect.declaration.CtClass;
 
 @Mojo(name = "assisted-generate-fluent", requiresDependencyCollection = COMPILE_PLUS_RUNTIME, threadSafe = true, defaultPhase = GENERATE_SOURCES)
 public class AssistedFluentGeneratorMojo extends AbstractMojo {
@@ -108,7 +109,7 @@ public class AssistedFluentGeneratorMojo extends AbstractMojo {
                         + StringUtils.join(classPath, ", "), e);
             }
             getLog().info("Processing... " + sourcePackage);
-            builderGenerator.generate(sourcePackage);
+            List<CtClass<?>> list = builderGenerator.generate(sourcePackage);
             Path outputFolder = Paths.get(outputPath);
 
             if (!exists(outputFolder) || !isDirectory(outputFolder)) {
@@ -121,10 +122,12 @@ public class AssistedFluentGeneratorMojo extends AbstractMojo {
 
                 getLog().info("Created " + outputPath);
             }
-            FileWriter writer = new FileWriter(builderGenerator, outputPath, targetPackage, true);
+
+            list.add(builderGenerator.getAbstractBuilder());
+            FileWriter writer = new FileWriter(list, targetPackage, new File(outputPath), true);
 
             writer.persist();
-        } catch (GeneratorException exception) {
+        } catch (Exception exception) {
             throw new MojoExecutionException("Builder Generation Exception", exception);
         }
     }
