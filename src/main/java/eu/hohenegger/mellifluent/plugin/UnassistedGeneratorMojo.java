@@ -100,7 +100,7 @@ public class UnassistedGeneratorMojo extends ResolveDependenciesMojo {
         getLog().info("Processing... " + jarFiles.stream().map(File::getName).collect(joining(",")));
         List<CtClass<?>> list = Collections.emptyList();
         try {
-            list = builderGenerator.generate(packageName);
+            list = builderGenerator.generate(packageName, true);
         } catch (Exception exception) {
             throw new MojoExecutionException("Builder Generation Exception", exception);
         }
