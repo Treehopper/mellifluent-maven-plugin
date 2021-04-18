@@ -61,6 +61,9 @@ public class UnassistedGeneratorMojo extends ResolveDependenciesMojo {
     @Parameter(property = "targetPackage", defaultValue = "")
     private String targetPackage;
 
+    @Parameter(property = "excludes", defaultValue = "")
+    private List<String> excludes;
+
     private boolean checkPackages = true;
 
     private UnassistedFluentBuilderGenerator builderGenerator;
@@ -90,6 +93,7 @@ public class UnassistedGeneratorMojo extends ResolveDependenciesMojo {
     private void doSomething(Set<Artifact> filteredArtifactSet) throws MojoExecutionException {
         List<File> jarFiles = filteredArtifactSet.stream().map(Artifact::getFile).collect(toList());
         builderGenerator = new UnassistedFluentBuilderGenerator<>();
+        builderGenerator.setExcludes(excludes);
         builderGenerator.setup(jarFiles, new Consumer<CharSequence>() {
             @Override
             public void accept(CharSequence string) {
