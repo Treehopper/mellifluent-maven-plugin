@@ -47,7 +47,7 @@
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
-            <version>3.1.2</version>
+            <version>3.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
@@ -125,7 +125,7 @@
                     <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
                     <licenseName>apache_v2</licenseName>
                     <organizationName>hohenegger.eu</organizationName>
-                    <copyrightOwners>Max Hohenegger &lt;mellifluent@hohenegger.eu&gt;</copyrightOwners>
+                    <copyrightOwners>Max Hohenegger &lt;mellifluent@hohenegger.eu></copyrightOwners>
                     <inceptionYear>2021</inceptionYear>
                 </configuration>
                 <executions>
