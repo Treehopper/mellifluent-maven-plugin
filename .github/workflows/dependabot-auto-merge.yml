@@ -3,7 +3,7 @@ name: Dependabot PR Auto-Merge
 on:
   pull_request:
     branches:
-      - main
+      - develop
 
 jobs:
 
