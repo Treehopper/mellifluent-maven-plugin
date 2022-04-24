@@ -2,7 +2,7 @@
  * #%L
  * mellifluent-maven-plugin
  * %%
- * Copyright (C) 2020 - 2021 Max Hohenegger <mellifluent@hohenegger.eu>
+ * Copyright (C) 2020 - 2022 Max Hohenegger <mellifluent@hohenegger.eu>
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.GENERATE_SOURCES;
 import static org.apache.maven.plugins.annotations.ResolutionScope.COMPILE_PLUS_RUNTIME;
 
+import eu.hohenegger.mellifluent.generator.FileWriter;
+import eu.hohenegger.mellifluent.generator.FluentBuilderGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,103 +34,111 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Consumer;
-
 import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-
-import eu.hohenegger.mellifluent.generator.FileWriter;
-import eu.hohenegger.mellifluent.generator.FluentBuilderGenerator;
 import spoon.compiler.ModelBuildingException;
 import spoon.reflect.declaration.CtClass;
 
-@Mojo(name = "assisted-generate-fluent", requiresDependencyCollection = COMPILE_PLUS_RUNTIME, threadSafe = true, defaultPhase = GENERATE_SOURCES)
+@Mojo(
+    name = "assisted-generate-fluent",
+    requiresDependencyCollection = COMPILE_PLUS_RUNTIME,
+    threadSafe = true,
+    defaultPhase = GENERATE_SOURCES)
 public class AssistedFluentGeneratorMojo extends AbstractMojo {
 
-    @Parameter(property = "sourcePackage", defaultValue = "")
-    private String sourcePackage;
+  @Parameter(property = "sourcePackage", defaultValue = "")
+  private String sourcePackage;
 
-    @Parameter(property = "targetPackage", defaultValue = "")
-    private String targetPackage;
+  @Parameter(property = "targetPackage", defaultValue = "")
+  private String targetPackage;
 
-    @Parameter(property = "skip", defaultValue = "false")
-    private boolean skip;
+  @Parameter(property = "skip", defaultValue = "false")
+  private boolean skip;
 
-    @Parameter(property = "srcRoot", defaultValue = "${project.build.sourceDirectory}")
-    private String srcRoot;
+  @Parameter(property = "srcRoot", defaultValue = "${project.build.sourceDirectory}")
+  private String srcRoot;
 
-    @Parameter(property = "outputPath", defaultValue = "${project.build.directory}/generated-sources/java/")
-    private String outputPath;
+  @Parameter(
+      property = "outputPath",
+      defaultValue = "${project.build.directory}/generated-sources/java/")
+  private String outputPath;
 
-    @Parameter(property = "project.compileClasspathElements", required = true, readonly = true)
-    private List<String> classpath;
+  @Parameter(property = "project.compileClasspathElements", required = true, readonly = true)
+  private List<String> classpath;
 
-    @Inject
-    private FluentBuilderGenerator builderGenerator;
+  @Inject private FluentBuilderGenerator builderGenerator;
 
-    protected List<String> createClassPath() {
-        return classpath.stream()
-                .filter(cpel -> !cpel.contains("target"))
-                .collect(toList());
+  protected List<String> createClassPath() {
+    return classpath.stream().filter(cpel -> !cpel.contains("target")).collect(toList());
+  }
+
+  @Override
+  public void execute() throws MojoExecutionException, MojoFailureException {
+    List<String> classPath = createClassPath();
+    if (classPath.isEmpty()) {
+      getLog()
+          .error(
+              "Classpath is empty. Make sure to include the compile phase so that compile-time"
+                  + " dependencies are available.");
+      return;
     }
 
-    @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        List<String> classPath = createClassPath();
-        if (classPath.isEmpty()) {
-            getLog().error("Classpath is empty. Make sure to include the compile phase so that compile-time dependencies are available.");
-            return;
-        }
+    if (skip) {
+      getLog().debug("Execution skipped");
+      return;
+    }
 
-        if (skip) {
-            getLog().debug("Execution skipped");
-            return;
-        }
+    try {
+      String sourcePackagePath = sourcePackage.replace('.', '/');
 
+      Consumer<CharSequence> progressListener =
+          new Consumer<>() {
+            @Override
+            public void accept(CharSequence string) {
+              getLog().info(string);
+            }
+          };
+      try {
+        builderGenerator.setup(
+            Paths.get(srcRoot, sourcePackagePath),
+            Thread.currentThread().getContextClassLoader(),
+            classPath,
+            progressListener);
+      } catch (ModelBuildingException e) {
+        getLog()
+            .error(
+                "Error building source model with sourcePackage "
+                    + sourcePackage
+                    + " and classpath "
+                    + StringUtils.join(classPath, ", "),
+                e);
+      }
+      getLog().info("Processing... " + sourcePackage);
+      List<CtClass<?>> list = builderGenerator.generate(sourcePackage);
+      Path outputFolder = Paths.get(outputPath);
+
+      if (!exists(outputFolder) || !isDirectory(outputFolder)) {
+        getLog().info("Output path " + outputPath + " does not exist. Creating...");
         try {
-            String sourcePackagePath = sourcePackage.replace('.', '/');
-
-            Consumer<CharSequence> progressListener = new Consumer<>() {
-                @Override
-                public void accept(CharSequence string) {
-                    getLog().info(string);
-                }
-            };
-            try {
-                builderGenerator.setup(Paths.get(srcRoot, sourcePackagePath),
-                        Thread.currentThread().getContextClassLoader(),
-                        classPath,
-                        progressListener);
-            } catch (ModelBuildingException e) {
-                getLog().error("Error building source model with sourcePackage " + sourcePackage + " and classpath "
-                        + StringUtils.join(classPath, ", "), e);
-            }
-            getLog().info("Processing... " + sourcePackage);
-            List<CtClass<?>> list = builderGenerator.generate(sourcePackage);
-            Path outputFolder = Paths.get(outputPath);
-
-            if (!exists(outputFolder) || !isDirectory(outputFolder)) {
-                getLog().info("Output path " + outputPath + " does not exist. Creating...");
-                try {
-                    Files.createDirectories(outputFolder);
-                } catch (IOException e) {
-                    getLog().error(e);
-                }
-
-                getLog().info("Created " + outputPath);
-            }
-
-            list.add(builderGenerator.getAbstractBuilder());
-            FileWriter writer = new FileWriter(list, targetPackage, new File(outputPath), true);
-
-            writer.persist();
-        } catch (Exception exception) {
-            throw new MojoExecutionException("Builder Generation Exception", exception);
+          Files.createDirectories(outputFolder);
+        } catch (IOException e) {
+          getLog().error(e);
         }
+
+        getLog().info("Created " + outputPath);
+      }
+
+      list.add(builderGenerator.getAbstractBuilder());
+      FileWriter writer = new FileWriter(list, targetPackage, new File(outputPath), true);
+
+      writer.persist();
+    } catch (Exception exception) {
+      throw new MojoExecutionException("Builder Generation Exception", exception);
     }
+  }
 }
