@@ -20,7 +20,7 @@
     <java.version>11</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <mellifluent.core.version>1.8.0</mellifluent.core.version>
+    <mellifluent.core.version>1.10.0</mellifluent.core.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
