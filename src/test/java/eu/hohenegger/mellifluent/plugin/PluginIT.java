@@ -36,9 +36,11 @@ public class PluginIT {
   @MavenOption(ERRORS)
   void spoon(MavenExecutionResult result) {
     assertThat(result).isSuccessful();
-    // assertThat(result)
-    //     .out()
-    //     .info()
-    //     .contains("--- maven-checkstyle-plugin:3.1.2:check (default) @ bar ---");
+    assertThat(result)
+        .project()
+        .hasTarget()
+        .has("target/generated-sources/java")
+        .has("target/generated-sources/java/eu/hohenegger/mellifluent/spoon/support/reflect/code")
+        .withJarFile();
   }
 }
