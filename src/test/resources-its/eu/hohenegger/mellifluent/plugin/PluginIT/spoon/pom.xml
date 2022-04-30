@@ -37,7 +37,8 @@
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <spoon.version>7.6.0</spoon.version>
     </properties>
-  
+
+
     <dependencies>
       <dependency>
         <groupId>fr.inria.gforge.spoon</groupId>
@@ -130,17 +131,6 @@
                   </excludes>
                 </configuration>
               </execution>
-    
-              <!--execution>
-                <id>assisted-generate-fluent</id>
-                <goals>
-                  <goal>assisted-generate-fluent</goal>
-                </goals>
-                <configuration>
-                  <sourcePackage>eu.hohenegger.mellifluent.generator.model</sourcePackage>
-                  <targetPackage>eu.hohenegger.mellifluent.generator.api</targetPackage>
-                </configuration>
-              </execution-->
             </executions>
           </plugin>
         </plugins>
