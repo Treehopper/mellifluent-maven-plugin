@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  #%L
+  mellifluent-maven-plugin
+  %%
+  Copyright (C) 2021 - 2022 Max Hohenegger <mellifluent@hohenegger.eu>
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>foo</groupId>
+    <artifactId>bar</artifactId>
+    <version>@project.version@</version>
+    <packaging>jar</packaging>
+
+    <properties>
+      <java.version>11</java.version>
+      <junit5.platform.version>1.7.1</junit5.platform.version>
+      <junit5.version>5.7.1</junit5.version>
+      <maven.compiler.source>${java.version}</maven.compiler.source>
+      <maven.compiler.target>${java.version}</maven.compiler.target>
+      <mellifluent.maven.plugin.version>@project.version@</mellifluent.maven.plugin.version>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <spoon.version>7.6.0</spoon.version>
+    </properties>
+
+
+    <dependencies>
+      <dependency>
+        <groupId>fr.inria.gforge.spoon</groupId>
+        <artifactId>spoon-core</artifactId>
+        <version>${spoon.version}</version>
+      </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.2.0</version>
+            <executions>
+              <execution>
+                <id>add-source</id>
+                <goals>
+                  <goal>add-source</goal>
+                </goals>
+                <phase>process-sources</phase>
+                <configuration>
+                  <sources>
+                    <source>${project.build.directory}/generated-sources/java</source>
+                  </sources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+          </plugin>
+          <plugin>
+            <groupId>com.github.Treehopper</groupId>
+            <artifactId>mellifluent-maven-plugin</artifactId>
+            <version>${mellifluent.maven.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>generate-fluent-declaration</id>
+                <goals>
+                  <goal>generate-fluent</goal>
+                </goals>
+                <configuration>
+                  <excludeGroupIds>com.fasterxml.jackson,com.martiansoftware,org.eclipse.jdt,org.eclipse.platform,log4j,commons-io,org.apache.maven,org.codehaus.plexus,org.apache.commons,org.tukaani,org.apache.commons,org.apache.maven.shared,org.apache.maven.shared,org.codehaus.plexus</excludeGroupIds>
+                  <packageName>spoon.support.reflect.declaration</packageName>
+                  <targetPackage>eu.hohenegger.mellifluent.spoon.support.reflect.declaration</targetPackage>
+                  <excludes>
+                    <exclude>CtCompilationUnitImpl</exclude>
+                    <!-- Set<CtTypeReference<? extends Throwable>> ThrownTypes vs Set ThrownTypes  -->
+                    <exclude>CtAnonymousExecutableImpl</exclude>
+                  </excludes>
+                </configuration>
+              </execution>
+              <execution>
+                <id>generate-fluent-reference</id>
+                <goals>
+                  <goal>generate-fluent</goal>
+                </goals>
+                <configuration>
+                  <excludeGroupIds>com.fasterxml.jackson,com.martiansoftware,org.eclipse.jdt,org.eclipse.platform,log4j,commons-io,org.apache.maven,org.codehaus.plexus,org.apache.commons,org.tukaani,org.apache.commons,org.apache.maven.shared,org.apache.maven.shared,org.codehaus.plexus</excludeGroupIds>
+                  <packageName>spoon.support.reflect.reference</packageName>
+                  <targetPackage>eu.hohenegger.mellifluent.spoon.support.reflect.reference</targetPackage>
+                </configuration>
+              </execution>
+              <execution>
+                <id>generate-fluent-code</id>
+                <goals>
+                  <goal>generate-fluent</goal>
+                </goals>
+                <configuration>
+                  <excludeGroupIds>com.fasterxml.jackson,com.martiansoftware,org.eclipse.jdt,org.eclipse.platform,log4j,commons-io,org.apache.maven,org.codehaus.plexus,org.apache.commons,org.tukaani,org.apache.commons,org.apache.maven.shared,org.apache.maven.shared,org.codehaus.plexus</excludeGroupIds>
+                  <packageName>spoon.support.reflect.code</packageName>
+                  <targetPackage>eu.hohenegger.mellifluent.spoon.support.reflect.code</targetPackage>
+                  <excludes>
+                    <!-- NPE in spoon -->
+                    <exclude>CtSuperAccessImpl</exclude>
+                    <!-- CtInvocationImplBuilder.java:[152,26] incompatible types: T cannot be converted to spoon.reflect.code.CtExpression -->
+                    <exclude>CtInvocationImpl</exclude>
+                    <!-- CtJavaDocTagImplBuilder.java:[108,21] incompatible types: java.lang.String cannot be converted to spoon.reflect.code.CtJavaDocTag.TagType  -->
+                    <exclude>CtJavaDocTagImpl</exclude>
+                    <!-- type error setTarget, setParent -->
+                    <exclude>CtNewClassImpl</exclude>
+                    <exclude>CtCaseImpl</exclude>
+                    <!-- T Value -->
+                    <exclude>CtLiteralImpl</exclude>
+                    <exclude>CtExecutableReferenceExpressionImpl</exclude>
+                    <exclude>CtExecutableReferenceExpressionImpl</exclude>
+                  </excludes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+    </build>
+</project>
