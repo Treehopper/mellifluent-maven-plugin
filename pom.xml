@@ -46,7 +46,7 @@
     <dependency>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-dependency-plugin</artifactId>
-      <version>3.3.0</version>
+      <version>3.6.1</version>
     </dependency>
     <dependency>
       <groupId>com.github.Treehopper</groupId>
@@ -239,8 +239,8 @@
               <include>src/main/java/**/*.java</include>
               <include>src/test/java/**/*.java</include>
             </includes>
-            <importOrder></importOrder>
-            <removeUnusedImports></removeUnusedImports>
+            <importOrder/>
+            <removeUnusedImports/>
             <googleJavaFormat>
               <version>1.8</version>
               <style>GOOGLE</style>
